@@ -129,3 +129,11 @@ export const getAnalysisById = (id) => {
     const history = getHistory();
     return history.find(a => a.id === id);
 };
+export const updateAnalysis = (updatedAnalysis) => {
+    const history = getHistory();
+    const index = history.findIndex(a => a.id === updatedAnalysis.id);
+    if (index !== -1) {
+        history[index] = updatedAnalysis;
+        localStorage.setItem('placement_history', JSON.stringify(history));
+    }
+};
