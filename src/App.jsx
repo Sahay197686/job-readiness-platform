@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import DashboardLayout from './components/DashboardLayout';
+import DashboardPage from './pages/DashboardPage';
 
 // Placeholder Pages
 const Placeholder = ({ name }) => (
@@ -17,7 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Placeholder name="Dashboard" />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/practice" element={<Placeholder name="Practice" />} />
           <Route path="/assessments" element={<Placeholder name="Assessments" />} />
           <Route path="/resources" element={<Placeholder name="Resources" />} />
