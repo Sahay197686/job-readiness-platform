@@ -9,12 +9,13 @@ export default function AssessmentsPage() {
     const [role, setRole] = useState('');
     const [jdText, setJdText] = useState('');
     const [error, setError] = useState('');
+    const [warning, setWarning] = useState('');
     const [analyzing, setAnalyzing] = useState(false);
     const navigate = useNavigate();
 
     const handleAnalyze = () => {
         if (!jdText.trim()) {
-            setError('Please paste a job description to start the analysis.');
+            setError('The Job Description is required to generate a plan.');
             return;
         }
         setError('');
@@ -69,10 +70,23 @@ export default function AssessmentsPage() {
                         <textarea
                             rows="12"
                             placeholder="Paste the full job description here..."
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                            className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none ${error ? 'border-red-500' : 'border-slate-200'}`}
                             value={jdText}
-                            onChange={(e) => setJdText(e.target.value)}
+                            onChange={(e) => {
+                                setJdText(e.target.value);
+                                if (e.target.value.trim().length > 0 && e.target.value.trim().length < 200) {
+                                    setWarning('This JD is too short to analyze deeply. Paste full JD for better output.');
+                                } else {
+                                    setWarning('');
+                                }
+                                if (e.target.value.trim()) setError('');
+                            }}
                         ></textarea>
+                        {warning && (
+                            <p className="text-[11px] text-amber-600 font-bold flex items-center gap-1 animate-pulse">
+                                <AlertCircle size={12} /> {warning}
+                            </p>
+                        )}
                         <p className="text-[11px] text-slate-400 font-medium">Pro tip: Long JDs (&gt;800 chars) provide more accurate skill detection.</p>
                     </div>
 

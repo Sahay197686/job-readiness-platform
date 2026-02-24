@@ -1,16 +1,25 @@
 import { getCompanyIntel } from './intelHeuristics';
 
 const SKILL_CATEGORIES = {
-    "Core CS": ["DSA", "OOP", "DBMS", "OS", "Networks"],
-    "Languages": ["Java", "Python", "JavaScript", "TypeScript", "C", "C++", "C#", "Go"],
-    "Web": ["React", "Next.js", "Node.js", "Express", "REST", "GraphQL"],
-    "Data": ["SQL", "MongoDB", "PostgreSQL", "MySQL", "Redis"],
-    "Cloud/DevOps": ["AWS", "Azure", "GCP", "Docker", "Kubernetes", "CI/CD", "Linux"],
-    "Testing": ["Selenium", "Cypress", "Playwright", "JUnit", "PyTest"]
+    "coreCS": ["DSA", "OOP", "DBMS", "OS", "Networks"],
+    "languages": ["Java", "Python", "JavaScript", "TypeScript", "C", "C++", "C#", "Go"],
+    "web": ["React", "Next.js", "Node.js", "Express", "REST", "GraphQL"],
+    "data": ["SQL", "MongoDB", "PostgreSQL", "MySQL", "Redis"],
+    "cloud": ["AWS", "Azure", "GCP", "Docker", "Kubernetes", "CI/CD", "Linux"],
+    "testing": ["Selenium", "Cypress", "Playwright", "JUnit", "PyTest"]
 };
 
 export const analyzeJD = (jdText, company, role) => {
-    const extractedSkills = {};
+    const extractedSkills = {
+        coreCS: [],
+        languages: [],
+        web: [],
+        data: [],
+        cloud: [],
+        testing: [],
+        other: []
+    };
+
     let detectedCount = 0;
     let categoriesPresent = 0;
 
@@ -25,28 +34,29 @@ export const analyzeJD = (jdText, company, role) => {
         }
     });
 
-    // 1. Skill Extraction confirmation
-    if (Object.keys(extractedSkills).length === 0) {
-        extractedSkills["General"] = ["General fresher stack"];
+    // 3) Default behavior if no skills detected
+    if (detectedCount === 0) {
+        extractedSkills.other = ["Communication", "Problem solving", "Basic coding", "Projects"];
     }
 
-    // 2. Readiness Score
+    // 2) Standardize Analysis Entry Schema - baseScore
     let score = 35;
     score += Math.min(categoriesPresent * 5, 30);
     if (company && company.trim()) score += 10;
     if (role && role.trim()) score += 10;
     if (jdText.length > 800) score += 10;
-    score = Math.min(score, 100);
+    const baseScore = Math.min(score, 100);
 
-    // 3. Round-wise Preparation Checklist
     const allDetected = Object.values(extractedSkills).flat();
+
+    // Checklist
     const checklist = [
         {
-            round: "Round 1: Aptitude / Basics",
+            roundTitle: "Round 1: Aptitude / Basics",
             items: ["Quantitative Aptitude revision", "Logical Reasoning practice", "Basic programming syntax", "Verbal ability mock test", "Understanding job requirements"]
         },
         {
-            round: "Round 2: DSA + Core CS",
+            roundTitle: "Round 2: Technical Fundamentals",
             items: [
                 "Array & String manipulation",
                 "Hashing & Search algorithms",
@@ -55,91 +65,103 @@ export const analyzeJD = (jdText, company, role) => {
                 "DBMS basics (ACID properties, Joins)",
                 "OS fundamentals (Threads, Paging)"
             ]
-        },
-        {
-            round: "Round 3: Tech Interview (Projects + Stack)",
-            items: [
-                `Review projects involving ${allDetected[0] || 'core technologies'}`,
-                "In-depth explanation of system architecture",
-                ...Object.entries(extractedSkills).map(([cat, skills]) => `Deep dive into ${skills.join(", ")}`)
-            ]
-        },
-        {
-            round: "Round 4: Managerial / HR",
-            items: ["Drafting 'Tell me about yourself'", "Preparing 'Why this company?'", "Situation-based (STAR) answers", "Salary negotiation basics", "Asking insightful questions"]
         }
     ];
 
-    // 4. 7-Day Plan
-    const dayPlan = [
-        { day: "Day 1-2", topics: "Basics + Core CS (OS, DBMS, OOP)" },
-        { day: "Day 3-4", topics: `DSA + Coding Practice (${allDetected.slice(0, 3).join(", ") || 'General Problems'})` },
-        { day: "Day 5", topics: `Project + Resume alignment (${extractedSkills["Web"] ? 'Focus on Frontend/Backend logic' : 'Focus on logic flows'})` },
-        { day: "Day 6", topics: "Mock Interview questions & revision" },
-        { day: "Day 7", topics: "Revision + targeting weak areas" }
+    // 7-Day Plan
+    const plan7Days = [
+        { day: "Day 1-2", focus: "Basics + Core CS", tasks: ["OS fundamentals", "DBMS Joins", "OOP Concepts"] },
+        { day: "Day 3-4", focus: "Coding Practice", tasks: [`Solve ${allDetected.slice(0, 3).join(", ") || 'General Problems'}`] },
+        { day: "Day 5", focus: "Project Review", tasks: [extractedSkills.web.length > 0 ? "Review Frontend/Backend logic" : "Focus on project architecture"] },
+        { day: "Day 6-7", focus: "Mock & Revision", tasks: ["Practice behavioral questions", "Final revision of weak areas"] }
     ];
 
-    // 5. 10 Likely Interview Questions
+    // Likely Interview Questions
     const questions = [];
     if (jdText.toLowerCase().includes("sql")) questions.push("Explain indexing and how it improves query performance.");
     if (jdText.toLowerCase().includes("react")) questions.push("Explain state management options in React and when to use context vs Redux.");
     if (jdText.toLowerCase().includes("dsa")) questions.push("How would you optimize search/retrieval in a large sorted dataset?");
-    if (jdText.toLowerCase().includes("java")) questions.push("Explain the difference between interface and abstract class with examples.");
-    if (jdText.toLowerCase().includes("docker")) questions.push("How does containerization differ from virtualization?");
-    if (jdText.toLowerCase().includes("rest")) questions.push("What are the key principles of a RESTful API?");
 
-    // Fill generic if not enough
     while (questions.length < 10) {
         const generic = [
             "Explain your most challenging project and how you overcame technical hurdles.",
             "How do you handle conflict in a team environment?",
             "Tell me about a time you had to learn a new technology quickly.",
             "What is your approach to debugging complex code?",
-            "How do you ensure code quality and maintainability?",
-            "Where do you see yourself in 3 years technically?"
+            "How do you ensure code quality and maintainability?"
         ];
         const pick = generic[questions.length % generic.length];
-        if (!questions.includes(pick)) questions.push(pick);
-        else break; // Safety break
+        if (!questions.push(pick)) break; // Safety
+        if (questions.length >= 10) break;
     }
 
-    // NEW: Company Intel and Round Mapping
-    const companyIntel = getCompanyIntel(company, allDetected);
+    const intel = getCompanyIntel(company, allDetected);
 
     return {
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
-        company,
-        role,
+        updatedAt: new Date().toISOString(),
+        company: company || "",
+        role: role || "",
         jdText,
         extractedSkills,
-        dayPlan,
+        roundMapping: intel.roundMapping,
         checklist,
-        questions,
-        readinessScore: score,
-        companyIntel // Persisted
+        plan7Days,
+        questions: questions.slice(0, 10),
+        baseScore,
+        skillConfidenceMap: {},
+        finalScore: baseScore,
+        companyIntel: intel
     };
 };
 
 export const saveToHistory = (analysis) => {
-    const history = JSON.parse(localStorage.getItem('placement_history') || '[]');
-    history.unshift(analysis);
-    localStorage.setItem('placement_history', JSON.stringify(history));
+    try {
+        const history = getHistory();
+        history.unshift(analysis);
+        localStorage.setItem('placement_history', JSON.stringify(history));
+    } catch (e) {
+        console.error("Failed to save to history", e);
+    }
 };
 
 export const getHistory = () => {
-    return JSON.parse(localStorage.getItem('placement_history') || '[]');
+    try {
+        const raw = localStorage.getItem('placement_history');
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+
+        // 5) History robustness: filter corrupted entries gracefully
+        return parsed.filter(entry => {
+            const isValid = entry && typeof entry === 'object' && entry.id && entry.jdText;
+            if (!isValid) {
+                console.warn("Corrupted history entry skipped:", entry);
+            }
+            return isValid;
+        });
+    } catch (e) {
+        console.error("Critical error loading history:", e);
+        return [];
+    }
 };
 
 export const getAnalysisById = (id) => {
     const history = getHistory();
     return history.find(a => a.id === id);
 };
+
 export const updateAnalysis = (updatedAnalysis) => {
-    const history = getHistory();
-    const index = history.findIndex(a => a.id === updatedAnalysis.id);
-    if (index !== -1) {
-        history[index] = updatedAnalysis;
-        localStorage.setItem('placement_history', JSON.stringify(history));
+    try {
+        const history = getHistory();
+        const index = history.findIndex(a => a.id === updatedAnalysis.id);
+        if (index !== -1) {
+            updatedAnalysis.updatedAt = new Date().toISOString();
+            history[index] = updatedAnalysis;
+            localStorage.setItem('placement_history', JSON.stringify(history));
+        }
+    } catch (e) {
+        console.error("Failed to update analysis", e);
     }
 };

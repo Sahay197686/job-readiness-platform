@@ -33,7 +33,7 @@ export default function ResultsPage() {
         }
         setAnalysis(data);
         setConfidenceMap(data.skillConfidenceMap || {});
-        setLiveScore(data.readinessScore);
+        setLiveScore(data.finalScore || data.baseScore);
     }, [id]);
 
     const toggleSkill = (skill) => {
@@ -43,23 +43,21 @@ export default function ResultsPage() {
         const newMap = { ...confidenceMap, [skill]: next };
         setConfidenceMap(newMap);
 
-        // Live score update logic:
+        // 4) Score stability rules:
         // +2 for each 'know', -2 for each 'practice' (relative to base)
-        // We calculate from the aggregate changes
         const allSkills = Object.values(analysis.extractedSkills).flat();
         let scoreAdjustment = 0;
 
         allSkills.forEach(s => {
             const conf = newMap[s] || 'practice';
             if (conf === 'know') scoreAdjustment += 2;
-            else scoreAdjustment -= 2;
         });
 
-        const newScore = Math.max(0, Math.min(100, analysis.readinessScore + scoreAdjustment));
+        const newScore = Math.max(0, Math.min(100, analysis.baseScore + scoreAdjustment));
         setLiveScore(newScore);
 
         // Persist
-        const updated = { ...analysis, skillConfidenceMap: newMap, readinessScore: newScore };
+        const updated = { ...analysis, skillConfidenceMap: newMap, finalScore: newScore };
         updateAnalysis(updated);
     };
 
@@ -72,11 +70,12 @@ export default function ResultsPage() {
         const sections = [
             `PREPARATION PLAN FOR ${analysis.company || 'Analysis'} - ${analysis.role || 'Role'}`,
             `Generated: ${new Date(analysis.createdAt).toLocaleString()}`,
-            `Readiness Score: ${liveScore}/100`,
+            `Base Score: ${analysis.baseScore}/100`,
+            `Current readiness: ${liveScore}/100`,
             `\n--- 7-DAY PLAN ---`,
-            analysis.dayPlan.map(d => `${d.day}: ${d.topics}`).join('\n'),
+            analysis.plan7Days.map(d => `${d.day} (${d.focus}):\n${d.tasks.map(t => `- ${t}`).join('\n')}`).join('\n'),
             `\n--- ROUND CHECKLIST ---`,
-            analysis.checklist.map(r => `${r.round}:\n${r.items.map(i => `- ${i}`).join('\n')}`).join('\n\n'),
+            analysis.checklist.map(r => `${r.roundTitle}:\n${r.items.map(i => `- ${i}`).join('\n')}`).join('\n\n'),
             `\n--- INTERVIEW QUESTIONS ---`,
             analysis.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')
         ];
@@ -95,8 +94,19 @@ export default function ResultsPage() {
     const allSkills = Object.values(analysis.extractedSkills).flat();
     const weakSkills = allSkills.filter(s => confidenceMap[s] !== 'know').slice(0, 3);
 
+    // Mappings for UI display names
+    const CATEGORY_NAMES = {
+        coreCS: "Core CS",
+        languages: "Languages",
+        web: "Web",
+        data: "Data",
+        cloud: "Cloud",
+        testing: "Testing",
+        other: "Other Skills"
+    };
+
     return (
-        <div className="max-w-6xl mx-auto space-y-8 pb-12">
+        <div className="max-w-6xl mx-auto space-y-8 pb-12 text-slate-900">
             <div className="flex items-center justify-between">
                 <Link to="/history" className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors font-medium">
                     <ArrowLeft size={18} />
@@ -114,13 +124,17 @@ export default function ResultsPage() {
 
             <header className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 mb-2">{analysis.company || 'Company Target'}</h1>
+                    <h1 className="text-3xl font-extrabold text-slate-900 mb-2 truncate max-w-md">{analysis.company || 'Company Target'}</h1>
                     <p className="text-lg text-slate-500 font-medium">{analysis.role || 'Software Engineer'}</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-4">
+                        Refreshed: {new Date(analysis.updatedAt).toLocaleString()}
+                    </p>
                 </div>
                 <div className="flex items-center gap-4 bg-primary/5 px-6 py-4 rounded-2xl border border-primary/10 transition-all">
                     <div className="text-right">
-                        <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-1">Interactive Score</p>
+                        <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-1">Stability Score</p>
                         <p className="text-4xl font-black text-primary">{liveScore}/100</p>
+                        <p className="text-[9px] text-slate-400 font-bold">Base: {analysis.baseScore}</p>
                     </div>
                     <TrendingUp className="text-primary" size={32} />
                 </div>
@@ -145,11 +159,11 @@ export default function ResultsPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
-                            <p className="text-sm text-slate-500 mb-6 font-medium">Toggle skills you've mastered to update your readiness score in real-time.</p>
+                            <p className="text-sm text-slate-500 mb-6 font-medium">Toggle skills you've mastered to update your readiness score. Base score is fixed.</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {Object.entries(analysis.extractedSkills).map(([category, skills]) => (
+                                {Object.entries(analysis.extractedSkills).map(([category, skills]) => skills.length > 0 && (
                                     <div key={category} className="space-y-3 p-5 rounded-2xl bg-slate-50/50 border border-slate-100/50">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{category}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{CATEGORY_NAMES[category] || category}</p>
                                         <div className="flex flex-wrap gap-2">
                                             {skills.map(skill => {
                                                 const isKnown = confidenceMap[skill] === 'know';
@@ -160,7 +174,7 @@ export default function ResultsPage() {
                                                         className={`
                                px-4 py-2 rounded-xl text-xs font-black border transition-all flex items-center gap-2 shadow-sm
                                ${isKnown
-                                                                ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600'
+                                                                ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600 scale-105'
                                                                 : 'bg-white text-slate-600 border-slate-200 hover:border-primary/40'}
                              `}
                                                     >
@@ -181,7 +195,7 @@ export default function ResultsPage() {
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <HelpCircle size={22} className="text-primary" />
-                                <CardTitle className="text-xl">10 Core Interview Questions</CardTitle>
+                                <CardTitle className="text-xl">Top 10 Questions</CardTitle>
                             </div>
                             <button
                                 onClick={() => copyToClipboard(analysis.questions.join('\n'), 'Questions')}
@@ -212,73 +226,33 @@ export default function ResultsPage() {
                     )}
 
                     {/* NEW: Round Mapping Engine (Dynamic Timeline) */}
-                    {analysis.companyIntel && analysis.companyIntel.roundMapping && (
-                        <RoundMappingTimeline rounds={analysis.companyIntel.roundMapping} />
+                    {analysis.roundMapping && (
+                        <RoundMappingTimeline rounds={analysis.roundMapping} />
                     )}
-
-                    {/* Action Box */}
-                    <Card className="bg-slate-900 text-white border-none shadow-2xl overflow-hidden relative">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <Sparkles size={120} />
-                        </div>
-                        <CardContent className="pt-8 relative z-10">
-                            <div className="flex items-center gap-2 mb-6 text-primary">
-                                <Sparkles size={24} />
-                                <h3 className="font-black text-xs uppercase tracking-[0.2em]">Next Step Roadmap</h3>
-                            </div>
-                            {weakSkills.length > 0 ? (
-                                <>
-                                    <p className="text-slate-400 text-sm font-bold mb-4 leading-relaxed">
-                                        Master <span className="text-white underline decoration-primary decoration-2 underline-offset-4">{weakSkills.join(', ')}</span> to boost your preparedness.
-                                    </p>
-                                    <div className="p-5 bg-white/5 rounded-2xl mb-8 border border-white/10 group cursor-pointer hover:bg-white/10 transition-all">
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-extrabold text-sm">Start Day 1-2 Basics</span>
-                                            <ChevronRight size={20} className="text-primary group-hover:translate-x-1 transition-transform" />
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="text-slate-400 text-sm font-bold mb-8 leading-relaxed">
-                                    Excellent! You've mastered all detected skills. Time to simulate a mock interview or tackle Day 6.
-                                </p>
-                            )}
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => navigate('/dashboard')}
-                                    className="bg-primary text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all"
-                                >
-                                    Dashboard
-                                </button>
-                                <button
-                                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                                    className="bg-white/10 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10"
-                                >
-                                    Back to Top
-                                </button>
-                            </div>
-                        </CardContent>
-                    </Card>
 
                     {/* 7-Day Plan */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <CalendarDays size={22} className="text-primary" />
-                                <CardTitle className="text-xl">7-Day Prep Plan</CardTitle>
+                                <CardTitle className="text-xl">7-Day Plan</CardTitle>
                             </div>
                             <button
-                                onClick={() => copyToClipboard(analysis.dayPlan.map(d => `${d.day}: ${d.topics}`).join('\n'), 'Plan')}
+                                onClick={() => copyToClipboard(analysis.plan7Days.map(d => `${d.day} (${d.focus}): ${d.tasks.join(', ')}`).join('\n'), 'Plan')}
                                 className="text-slate-300 hover:text-primary transition-all p-1.5"
                             >
                                 <Copy size={18} />
                             </button>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {analysis.dayPlan.map((plan, i) => (
+                            {analysis.plan7Days.map((plan, i) => (
                                 <div key={i} className="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 group hover:border-primary/30 transition-all shadow-sm">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">{plan.day}</p>
-                                    <p className="text-sm font-extrabold text-slate-800 leading-snug">{plan.topics}</p>
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">{plan.day} &bull; {plan.focus}</p>
+                                    <ul className="space-y-1">
+                                        {plan.tasks.map((t, idx) => (
+                                            <li key={idx} className="text-sm font-extrabold text-slate-800 leading-snug">&bull; {t}</li>
+                                        ))}
+                                    </ul>
                                 </div>
                             ))}
                         </CardContent>
@@ -289,10 +263,10 @@ export default function ResultsPage() {
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <ListTodo size={22} className="text-primary" />
-                                <CardTitle className="text-xl">Round Checklist</CardTitle>
+                                <CardTitle className="text-xl">Task Checklist</CardTitle>
                             </div>
                             <button
-                                onClick={() => copyToClipboard(analysis.checklist.map(r => `${r.round}: ${r.items.join(', ')}`).join('\n'), 'Checklist')}
+                                onClick={() => copyToClipboard(analysis.checklist.map(r => `${r.roundTitle}: ${r.items.join(', ')}`).join('\n'), 'Checklist')}
                                 className="text-slate-300 hover:text-primary transition-all p-1.5"
                             >
                                 <Copy size={18} />
@@ -301,7 +275,7 @@ export default function ResultsPage() {
                         <CardContent className="space-y-8">
                             {analysis.checklist.map((round, i) => (
                                 <div key={i} className="space-y-4">
-                                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-3">{round.round}</h4>
+                                    <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-3">{round.roundTitle}</h4>
                                     <ul className="space-y-3">
                                         {round.items.map((item, idx) => (
                                             <li key={idx} className="flex items-start gap-3 text-xs font-bold text-slate-600 leading-tight group cursor-default">

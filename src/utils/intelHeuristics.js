@@ -53,48 +53,47 @@ export const getCompanyIntel = (companyName = "", skills = []) => {
 
 const generateRoundMapping = (isEnterprise, skills = []) => {
     const hasWeb = skills.some(s => ["React", "Node.js", "Express", "Next.js"].includes(s));
-    const hasDSA = skills.includes("DSA");
 
     if (isEnterprise) {
         return [
             {
-                round: "Round 1: Online Test",
-                focus: "DSA + Aptitude",
-                why: "To filter candidates based on algorithmic thinking and speed."
+                roundTitle: "Round 1: Online Test",
+                focusAreas: ["DSA", "Aptitude", "Speed"],
+                whyItMatters: "To filter candidates based on algorithmic thinking and speed."
             },
             {
-                round: "Round 2: Technical Interview I",
-                focus: "DSA + Core CS",
-                why: "Focuses on fundamental problem solving and computer science basics."
+                roundTitle: "Round 2: Technical Interview I",
+                focusAreas: ["DSA", "Core CS Fundamentals"],
+                whyItMatters: "Focuses on fundamental problem solving and computer science basics."
             },
             {
-                round: "Round 3: Tech + Projects",
-                focus: "Architecture + Deep Dive",
-                why: "Assesses how you apply concepts to real projects and system design."
+                roundTitle: "Round 3: Tech + Projects",
+                focusAreas: ["Architecture", "System Design", "Deep Dive"],
+                whyItMatters: "Assesses how you apply concepts to real projects and system design."
             },
             {
-                round: "Round 4: HR / Behavioral",
-                focus: "Cultural Fit + STAR",
-                why: "Ensures alignment with company values and long-term potential."
+                roundTitle: "Round 4: HR / Behavioral",
+                focusAreas: ["Cultural Fit", "STAR Method", "Aptitude"],
+                whyItMatters: "Ensures alignment with company values and long-term potential."
             }
         ];
     } else {
         // Startup Logic
         return [
             {
-                round: "Round 1: Practical Coding",
-                focus: hasWeb ? "React/JS Task" : "Live Coding",
-                why: "Verifies you can actually build things in a real-world environment."
+                roundTitle: "Round 1: Practical Coding",
+                focusAreas: hasWeb ? ["React/JS Task", "Live Coding"] : ["Problem Solving", "Live Coding"],
+                whyItMatters: "Verifies you can actually build things in a real-world environment."
             },
             {
-                round: "Round 2: System Discussion",
-                focus: "Feature Implementation",
-                why: "Tests your ability to think through product requirements and edge cases."
+                roundTitle: "Round 2: System Discussion",
+                focusAreas: ["Feature Implementation", "Architecture", "Scalability"],
+                whyItMatters: "Tests your ability to think through product requirements and edge cases."
             },
             {
-                round: "Round 3: Culture Fit",
-                focus: "Ownership + Growth",
-                why: "Crucial for startups to ensure you take initiative and fit the fast pace."
+                roundTitle: "Round 3: Culture Fit",
+                focusAreas: ["Ownership", "Growth Mindset", "Startup Pace"],
+                whyItMatters: "Crucial for startups to ensure you take initiative and fit the fast pace."
             }
         ];
     }

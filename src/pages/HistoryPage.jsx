@@ -1,15 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/Card';
 import { getHistory } from '../utils/analysisLogic';
-import { Search, History as HistoryIcon, ArrowRight, ExternalLink } from 'lucide-react';
+import { Search, History as HistoryIcon, ArrowRight, ExternalLink, AlertCircle } from 'lucide-react';
 
 export default function HistoryPage() {
     const [history, setHistory] = useState([]);
     const [search, setSearch] = useState('');
+    const [skippedCount, setSkippedCount] = useState(0);
 
     useEffect(() => {
-        setHistory(getHistory());
+        const fullHistory = getHistory();
+        setHistory(fullHistory);
+
+        // Check for corruption count
+        try {
+            const raw = localStorage.getItem('placement_history');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.length > fullHistory.length) {
+                    setSkippedCount(parsed.length - fullHistory.length);
+                }
+            }
+        } catch (e) {
+            console.error("Error checking corruption count", e);
+        }
     }, []);
 
     const filteredHistory = history.filter(item =>
@@ -39,6 +54,13 @@ export default function HistoryPage() {
                     />
                 </div>
             </div>
+
+            {skippedCount > 0 && (
+                <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-100 rounded-xl text-amber-700 text-xs font-bold shadow-sm">
+                    <AlertCircle size={14} className="flex-shrink-0" />
+                    One saved entry couldn't be loaded. Create a new analysis if needed.
+                </div>
+            )}
 
             {filteredHistory.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4">
@@ -79,15 +101,22 @@ export default function HistoryPage() {
                                             <div className="text-right">
                                                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Score</p>
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`text-2xl font-black ${item.readinessScore > 70 ? 'text-emerald-500' : 'text-primary'}`}>
-                                                        {item.readinessScore}
-                                                    </span>
-                                                    <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={`h-full rounded-full ${item.readinessScore > 70 ? 'bg-emerald-500' : 'bg-primary'}`}
-                                                            style={{ width: `${item.readinessScore}%` }}
-                                                        />
-                                                    </div>
+                                                    {(() => {
+                                                        const score = item.finalScore ?? item.readinessScore ?? item.baseScore ?? 0;
+                                                        return (
+                                                            <>
+                                                                <span className={`text-2xl font-black ${score > 70 ? 'text-emerald-500' : 'text-primary'}`}>
+                                                                    {score}
+                                                                </span>
+                                                                <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                                    <div
+                                                                        className={`h-full rounded-full ${score > 70 ? 'bg-emerald-500' : 'bg-primary'}`}
+                                                                        style={{ width: `${score}%` }}
+                                                                    />
+                                                                </div>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </div>
                                             </div>
                                             <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all">
