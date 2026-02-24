@@ -57,6 +57,18 @@ export default function HistoryPage() {
                                                     <ExternalLink size={14} className="text-slate-300 group-hover:text-primary transition-colors" />
                                                 </h3>
                                                 <p className="text-slate-500 font-semibold text-sm mb-2">{item.role || 'Software Engineer'}</p>
+                                                <div className="flex flex-wrap gap-2 mb-3">
+                                                    {item.companyIntel?.industry && (
+                                                        <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold border border-slate-200">
+                                                            {item.companyIntel.industry}
+                                                        </span>
+                                                    )}
+                                                    {item.companyIntel?.sizeCategory && (
+                                                        <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold border border-primary/20">
+                                                            {item.companyIntel.sizeCategory}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
                                                     Analyzed on {new Date(item.createdAt).toLocaleDateString()}
                                                 </p>

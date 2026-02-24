@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { getAnalysisById, updateAnalysis } from '../utils/analysisLogic';
+import CompanyIntelCard from '../components/CompanyIntelCard';
+import RoundMappingTimeline from '../components/RoundMappingTimeline';
 import {
     ArrowLeft,
     CheckCircle2,
@@ -126,7 +128,6 @@ export default function ResultsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
-
                     {/* Skills Section */}
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between border-none pb-0">
@@ -157,11 +158,11 @@ export default function ResultsPage() {
                                                         key={skill}
                                                         onClick={() => toggleSkill(skill)}
                                                         className={`
-                              px-4 py-2 rounded-xl text-xs font-black border transition-all flex items-center gap-2 shadow-sm
-                              ${isKnown
+                               px-4 py-2 rounded-xl text-xs font-black border transition-all flex items-center gap-2 shadow-sm
+                               ${isKnown
                                                                 ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600'
                                                                 : 'bg-white text-slate-600 border-slate-200 hover:border-primary/40'}
-                            `}
+                             `}
                                                     >
                                                         {isKnown ? <CheckCircle2 size={12} strokeWidth={3} /> : <Circle size={12} strokeWidth={3} className="text-slate-300" />}
                                                         {skill}
@@ -205,6 +206,16 @@ export default function ResultsPage() {
                 </div>
 
                 <div className="space-y-8">
+                    {/* NEW: Company Intel Block */}
+                    {analysis.companyIntel && (
+                        <CompanyIntelCard intel={analysis.companyIntel} />
+                    )}
+
+                    {/* NEW: Round Mapping Engine (Dynamic Timeline) */}
+                    {analysis.companyIntel && analysis.companyIntel.roundMapping && (
+                        <RoundMappingTimeline rounds={analysis.companyIntel.roundMapping} />
+                    )}
+
                     {/* Action Box */}
                     <Card className="bg-slate-900 text-white border-none shadow-2xl overflow-hidden relative">
                         <div className="absolute top-0 right-0 p-4 opacity-10">

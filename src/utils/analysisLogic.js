@@ -1,3 +1,5 @@
+import { getCompanyIntel } from './intelHeuristics';
+
 const SKILL_CATEGORIES = {
     "Core CS": ["DSA", "OOP", "DBMS", "OS", "Networks"],
     "Languages": ["Java", "Python", "JavaScript", "TypeScript", "C", "C++", "C#", "Go"],
@@ -101,6 +103,9 @@ export const analyzeJD = (jdText, company, role) => {
         else break; // Safety break
     }
 
+    // NEW: Company Intel and Round Mapping
+    const companyIntel = getCompanyIntel(company, allDetected);
+
     return {
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
@@ -111,7 +116,8 @@ export const analyzeJD = (jdText, company, role) => {
         dayPlan,
         checklist,
         questions,
-        readinessScore: score
+        readinessScore: score,
+        companyIntel // Persisted
     };
 };
 
