@@ -1,71 +1,9 @@
-:root {
-  /* Colors */
-  --color-bg: #F7F6F3;
-  --color-text: #111111;
-  --color-accent: #8B0000;
-  --color-success: #7A8B7A; /* Muted Green */
-  --color-warning: #B8860B; /* Muted Amber */
-  --color-border: rgba(17, 17, 17, 0.1);
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  /* Spacing */
-  --space-1: 8px;
-  --space-2: 16px;
-  --space-3: 24px;
-  --space-4: 40px;
-  --space-5: 64px;
-
-  /* Typography */
-  --font-serif: 'Crimson Pro', serif;
-  --font-sans: 'Inter', sans-serif;
-
-  /* Transitions */
-  --transition: 180ms ease-in-out;
-  --radius: 0px; /* Minimalist radius or sharp? User said "Same hover effect and border radius everywhere". I'll use a subtle 2px. */
-  --radius-sm: 2px;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-sans);
-  font-size: 17px;
-  line-height: 1.7;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-}
-
-p {
-  max-width: 720px;
-}
-
-button {
-  cursor: pointer;
-  transition: all var(--transition);
-  font-family: var(--font-sans);
-  font-size: 16px;
-  border-radius: var(--radius-sm);
-}
-
-input {
-  transition: border-color var(--transition);
-  font-family: var(--font-sans);
-  border-radius: var(--radius-sm);
-}
-
-.container {
-  max-width: 1440px;
-  margin: 0 auto;
+@layer base {
+  body {
+    @apply antialiased text-slate-900 bg-white;
+  }
 }
