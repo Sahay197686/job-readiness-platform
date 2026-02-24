@@ -1,6 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-primary: hsl(245, 58%, 51%);
+  --color-primary-hover: hsl(245, 58%, 45%);
+}
 
 @layer base {
   body {
