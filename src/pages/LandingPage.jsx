@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function LandingPage() {
+    const navigate = useNavigate();
+
     return (
         <div className="min-h-screen flex flex-col">
             {/* Hero Section */}
@@ -12,7 +15,7 @@ export default function LandingPage() {
                     Practice, assess, and prepare for your dream job with our comprehensive placement readiness platform.
                 </p>
                 <button
-                    onClick={() => window.location.href = '/dashboard'}
+                    onClick={() => navigate('/dashboard')}
                     className="bg-primary hover:bg-primary-hover text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 transition-all duration-200"
                 >
                     Get Started

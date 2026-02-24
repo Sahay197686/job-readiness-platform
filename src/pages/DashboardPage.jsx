@@ -17,7 +17,8 @@ import {
     CheckCircle2,
     Clock,
     ArrowRight,
-    Calendar
+    Calendar,
+    UserCircle
 } from 'lucide-react';
 
 const radarData = [
