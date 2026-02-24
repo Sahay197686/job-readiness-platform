@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import DashboardLayout from './components/DashboardLayout';
 import DashboardPage from './pages/DashboardPage';
+import AssessmentsPage from './pages/AssessmentsPage';
+import ResultsPage from './pages/ResultsPage';
+import HistoryPage from './pages/HistoryPage';
 
 // Placeholder Pages
 const Placeholder = ({ name }) => (
@@ -20,7 +23,9 @@ function App() {
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/practice" element={<Placeholder name="Practice" />} />
-          <Route path="/assessments" element={<Placeholder name="Assessments" />} />
+          <Route path="/assessments" element={<AssessmentsPage />} />
+          <Route path="/history" element={<HistoryPage />} />
+          <Route path="/results/:id" element={<ResultsPage />} />
           <Route path="/resources" element={<Placeholder name="Resources" />} />
           <Route path="/profile" element={<Placeholder name="Profile" />} />
         </Route>

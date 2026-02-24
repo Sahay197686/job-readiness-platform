@@ -5,7 +5,8 @@ import {
     Code2,
     ClipboardCheck,
     Library,
-    UserCircle
+    UserCircle,
+    History
 } from 'lucide-react';
 
 export default function DashboardLayout() {
