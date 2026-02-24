@@ -12,7 +12,7 @@ export default function DashboardLayout() {
     const navItems = [
         { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
         { name: 'Practice', icon: Code2, path: '/practice' },
-        { name: 'Assessments', icon: /assessments' },
+        { name: 'Assessments', icon: ClipboardCheck, path: '/assessments' },
         { name: 'Resources', icon: Library, path: '/resources' },
         { name: 'Profile', icon: UserCircle, path: '/profile' },
     ];
