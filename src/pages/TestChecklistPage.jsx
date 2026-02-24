@@ -94,11 +94,10 @@ export default function TestChecklistPage() {
                             onClick={() => handleToggle(item.id)}
                         >
                             <div className="pt-0.5">
-                                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all
-                                    ${checklist[item.id] ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200'}
-                                `}>
-                                    {checklist[item.id] && <CheckCircle2 size={16} strokeWidth={3} />}
-                                </div>
+                                <Checkbox
+                                    checked={!!checklist[item.id]}
+                                    onCheckedChange={() => handleToggle(item.id)}
+                                />
                             </div>
                             <div className="space-y-1">
                                 <p className={`text-sm font-bold ${checklist[item.id] ? 'text-emerald-900 line-through opacity-70' : 'text-slate-800'}`}>
