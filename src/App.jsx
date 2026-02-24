@@ -6,6 +6,8 @@ import DashboardPage from './pages/DashboardPage';
 import AssessmentsPage from './pages/AssessmentsPage';
 import ResultsPage from './pages/ResultsPage';
 import HistoryPage from './pages/HistoryPage';
+import TestChecklistPage from './pages/TestChecklistPage';
+import ShippingPage from './pages/ShippingPage';
 
 // Placeholder Pages
 const Placeholder = ({ name }) => (
@@ -28,6 +30,8 @@ function App() {
           <Route path="/results/:id" element={<ResultsPage />} />
           <Route path="/resources" element={<Placeholder name="Resources" />} />
           <Route path="/profile" element={<Placeholder name="Profile" />} />
+          <Route path="/prp/07-test" element={<TestChecklistPage />} />
+          <Route path="/prp/08-ship" element={<ShippingPage />} />
         </Route>
         {/* Redirect unknown routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
